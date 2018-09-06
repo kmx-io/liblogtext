@@ -37,8 +37,8 @@ int  logtext_file_open (s_logtext_file *lf, const char *path,
                         int flags);
 int  logtext_file_close (s_logtext_file *lf);
 long logtext_file_seek (s_logtext_file *lf, int line, int whence);
-int  logtext_file_read (s_logtext_file *lf, line_number_t line,
-                        char *buffer, line_length_t length);
+int  logtext_file_read (s_logtext_file *lf, char *buffer,
+                        line_length_t length);
 int  logtext_file_write (s_logtext_file *lf, char *buffer,
                          line_length_t length);
 

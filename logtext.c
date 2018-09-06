@@ -70,8 +70,8 @@ long logtext_file_seek (s_logtext_file *lf, int line,
   return offset;
 }
 
-int logtext_file_read (s_logtext_file *lf, line_number_t line,
-                       char *buffer, line_length_t length)
+int logtext_file_read (s_logtext_file *lf, char *buffer,
+                       line_length_t length)
 {
   long          start;
   line_offset_t end;
