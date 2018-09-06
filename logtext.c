@@ -98,7 +98,7 @@ int logtext_file_write (s_logtext_file *lf, char *buffer,
   line_offset_t offset;
   assert(lf);
   assert(buffer);
-  assert(lf->offset == ftell(lf->data));
+  assert((long) lf->offset == ftell(lf->data));
   if (fwrite(buffer, length, 1, lf->data) != 1) {
     fseek(lf->data, lf->offset, SEEK_SET);
     return -1;
