@@ -55,19 +55,36 @@ int logtext_file_close (s_logtext_file *lf)
   return 0;
 }
 
+long logtext_file_seek (s_logtext_file *lf, int line,
+                        int whence)
+{
+  long offset;
+  if (fseek(lf->lines, line * sizeof(line_offset_t), whence))
+    return -1;
+  if ((offset = ftell(lf->lines)) < 0)
+    return -1;
+  if (fread(&offset, sizeof(line_offset_t), 1, lf->lines) != 1)
+    return -1;
+  if (fseek(lf->data, offset, SEEK_SET))
+    return -1;
+  return offset;
+}
+
 int logtext_file_read (s_logtext_file *lf, line_number_t line,
                        char *buffer, line_length_t length)
 {
-  line_offset_t offset[2];
+  long          start;
+  line_offset_t end;
   line_offset_t line_length;
   assert(lf);
+  assert(lf->data);
   assert(lf->lines);
-  fseek(lf->lines, line * sizeof(line_offset_t), SEEK_SET);
-  if (fread(offset, sizeof(line_offset_t), 2, lf->lines) != 2)
+  if ((start = ftell(lf->data)) < 0)
     return -1;
-  fseek(lf->data, offset[0], SEEK_SET);
-  line_length = offset[1] - offset[0];
-  if (length < line_length + 1)
+  if (fread(&end, sizeof(line_offset_t), 1, lf->lines) != 1)
+    return -1;
+  line_length = end - start;
+  if (length <= line_length)
     return -1;
   if (fread(buffer, line_length, 1, lf->data) != 1)
     return -1;
@@ -80,21 +97,22 @@ int logtext_file_write (s_logtext_file *lf, char *buffer,
 {
   line_offset_t offset;
   assert(lf);
+  assert(buffer);
+  assert(lf->offset == ftell(lf->data));
   if (fwrite(buffer, length, 1, lf->data) != 1) {
     fseek(lf->data, lf->offset, SEEK_SET);
     return -1;
   }
   offset = lf->offset + length;
   if (fwrite(&offset, sizeof(line_offset_t), 1, lf->lines) != 1) {
-    fseek(lf->data, lf->offset, SEEK_SET);
     fseek(lf->lines, lf->line * sizeof(line_offset_t), SEEK_SET);
+    fseek(lf->data, lf->offset, SEEK_SET);
     return -1;
   }
-  lf->offset += length;
+  lf->offset = offset;
   lf->lines++;
   return 0;
 }
-
 
 int logtext_open (s_logtext *lt, const char *path, int flags)
 {
