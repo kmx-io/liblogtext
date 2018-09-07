@@ -114,12 +114,30 @@ int logtext_file_write (s_logtext_file *lf, char *buffer,
   return 0;
 }
 
-int logtext_open (s_logtext *lt, const char *path, int flags)
+int logtext_open_file (s_logtext *lt)
 {
   assert(lt);
-  assert(path);
-  (void) flags;
   return -1;
+}
+
+int logtext_open (s_logtext *lt, const char *path, int flags)
+{
+  char *d;
+  assert(lt);
+  assert(path);
+  d = lt->path;
+  while (*path)
+    *d++ = *path++;
+  *d++ = 0;
+  lt->flags = flags;
+  lt->number = 0;
+  lt->size_limit = LOGTEXT_SIZE_LIMIT;
+  lt->window = LOGTEXT_WINDOW;
+  while (lt->number < LOGTEXT_NUMBER_MAX && !logtext_open_file(lt))
+    lt->number++;
+  if (lt->number == LOGTEXT_NUMBER_MAX)
+    return -1;
+  return 0;
 }
 
 int logtext_close (s_logtext *lt)

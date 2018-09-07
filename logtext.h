@@ -41,11 +41,20 @@ int  logtext_file_read (s_logtext_file *lf, char *buffer,
                         line_length_t length);
 int  logtext_file_write (s_logtext_file *lf, char *buffer,
                          line_length_t length);
+int  logtext_file_reindex (s_logtext_file *lf);
+
+#define LOGTEXT_NUMBER_MAX 1000000
+#define LOGTEXT_SIZE_LIMIT      (1 << 21)
+#define LOGTEXT_WINDOW          10
 
 typedef struct logtext {
+  char           path[PATH_MAX];
+  int            flags;
+  unsigned long  number;
   s_logtext_file current;
-  s_logtext_file last;
+  unsigned long  size_limit;
   line_window_t  window;
+  s_logtext_file previous;
 } s_logtext;
 
 int logtext_open (s_logtext *lt, const char *path, int flags);
